@@ -1,3 +1,6 @@
+#ifndef Configs_h
+#define Configs_h
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -12,5 +15,8 @@
 #define DEFAULT_PORT 8888
 #define MAX_NAME_LENGTH 50
 #define MAX_IPv4_LENGTH 50
-#define BUFFER_SIZE 256
+#define BUFFER_SIZE 512
 #define MAX_MESSAGES 20
+#define TICK_PER_SECOND 10
+
+#endif

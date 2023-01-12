@@ -24,7 +24,7 @@ int main(int argc, char **argv)
     get_connection_address(connect_ip, &connect_port);
 
     fflush(stdin);
-    system("clear");
+    interface_init();
 
     // Local socket address
     struct sockaddr_in local_address;
@@ -49,8 +49,8 @@ int main(int argc, char **argv)
     // Getting user ip address
     user_ip = inet_ntoa(local_address.sin_addr);
 
-    // save_user_info(name, user_ip, user_port);
-    init_ui(name, user_ip, user_port);
+    // set user info
+    update_info(name, user_ip, user_port);
 
     // WTF
     setNonblockFlag(sock);
@@ -67,7 +67,6 @@ int main(int argc, char **argv)
     {
         add_message("Waiting someone to connect...");
     }
-
     while (1)
     {
         // C )))
@@ -75,6 +74,7 @@ int main(int argc, char **argv)
         unsigned int address_size = sizeof(local_address);
         while ((read_size = read_from_socket(sock, (char*)&buffer_read, &buffer_address, &address_size)) != -1) // while getting smth
         {
+            printf("1");
             // do not get our own packages
             if (check_equal_addresses(&local_address, &buffer_address))
                 continue;

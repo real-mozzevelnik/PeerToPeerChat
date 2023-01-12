@@ -15,11 +15,11 @@ void bind_address(int sock, struct sockaddr_in *addr, int port)
     // Clean addr
     memset((char*)addr, 0, sizeof(*addr));
     addr->sin_family = AF_INET; // Set the inet
-    addr->sin_port = htons((uint16_t)port); // Set  network byte order
+    addr->sin_port = htons((unsigned short)port); // Set network byte order
     addr->sin_addr.s_addr = htonl(INADDR_LOOPBACK);
 
     // Binding the socket to local port
-    int result = bind(sock, (struct sockaddr*)addr, sizeof(*addr)); // Bibding the socket
+    int result = bind(sock, (struct sockaddr*)addr, sizeof(*addr)); // Binding the socket
     if (result == -1)
         send_error("Error: binding the socket.");
 }

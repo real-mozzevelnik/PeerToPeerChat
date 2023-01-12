@@ -1,11 +1,97 @@
 #include "../Configs.h"
 #include "Interface.h"
 
-static char messages[MAX_MESSAGES][BUFFER_SIZE] = {{0}};
-// save user info
-char name[MAX_NAME_LENGTH] = {0};
-char ip[MAX_IPv4_LENGTH] = {0};
-int port;
+#include <ncurses.h>
+
+// buffer for messages
+static char messages[16][126] = {{0}};
+
+static WINDOW *user_info_box = NULL;
+static WINDOW *messages_box = NULL;
+static WINDOW *input_box = NULL;
+
+static void init_info()
+{
+    user_info_box = newwin(5, 65, 0, 0);
+    box(user_info_box, 0, 0);
+    wrefresh(user_info_box);
+}
+
+static void init_messages()
+{
+    messages_box = newwin(17, 65, 5, 0);
+    box(messages_box, 0, 0);
+    // mvwprintw(messages_box, 16, 0, "│                                                               │");
+    wrefresh(messages_box);
+}
+
+static void init_input()
+{
+    input_box = newwin(3, 65, 22, 0);
+    box(input_box, 0, 0);
+    // mvwprintw(input_box, 0, 0, "├───────────────────────────────────────────────────────────────┤");
+    wrefresh(input_box);
+}
+
+void interface_init()
+{
+    printf("\e[8;25;80;t");
+    // init ncurses lib
+    initscr();
+    // init boxes
+    init_info();
+    init_messages();
+    init_input();
+
+    keypad(input_box, TRUE);
+    echo();
+    cbreak(); // disable line buffering
+    wtimeout(input_box, 1000 / TICK_PER_SECOND);
+}
+
+void update_info(char *name, char *ip, int port)
+{
+    // clear and recreate box
+    wclear(user_info_box);
+    box(user_info_box, 0, 0);
+    // print address
+    mvwprintw(user_info_box, 1, 1, "Your address: ");
+    mvwprintw(user_info_box, 1, 16, ip);
+    char port_string[5] = {0};
+    sprintf((char*)&port_string, "%d", port);
+    mvwprintw(user_info_box, 1, 16 + strlen(ip), ":");
+    mvwprintw(user_info_box, 1, 17 + strlen(ip), port_string);
+    // print name
+    mvwprintw(user_info_box, 2, 1, "Your name: ");
+    mvwprintw(user_info_box, 2, 12, name);
+
+    wrefresh(user_info_box);
+}
+
+static void update_messages()
+{
+    wclear(messages_box);
+    box(messages_box, 0, 0);
+    // mvwprintw(messages_box, 16, 0, "│                                                               │");
+    for (int i = 0; i < 16; i++)
+    {
+        mvwprintw(messages_box, i, 1, messages[i]);
+    }
+    wrefresh(messages_box);
+}
+
+void add_message(char *message)
+{
+    for (int i = 1; i < 16; i++)
+    {
+        memset((char*)&messages[i-1], ' ', sizeof(char) * 18);
+        strcpy((char*)&messages[i-1], (char*)messages[i]);
+    }
+    strcpy((char*)&messages[15], message);
+    update_messages();
+}
+
+
 
 // func to send error and exit programm
 void send_error(char *error_name)
@@ -14,68 +100,6 @@ void send_error(char *error_name)
     printf("%s\n", error_name);
     exit(EXIT_FAILURE);
 
-}
-
-void init_user_info(char *name, char *ip, int port)
-{
-    puts("─────────────────────────────────────────────────────────────────");
-    printf("│ Your name: %-51s│\n", name);
-    printf("│ Your ip address: %-45s│\n", ip);
-    printf("│ Your port: %-51d│\n", port);
-    puts("─────────────────────────────────────────────────────────────────");
-}
-
-void show_messages(void)
-{
-    puts("─────────────────────────────────────────────────────────────────");
-    printf("│ MESSAGES:                                                     │\n");
-    for (int i = 0; i < MAX_MESSAGES; i++)
-    {
-        printf("│ %-62s│\n", messages[i]);
-    }
-    puts("─────────────────────────────────────────────────────────────────");
-
-}
-
-void init_ui(char *name, char *ip, int port)
-{
-    system("clear");
-    init_user_info(name, ip, port);
-    show_messages();
-}
-
-void add_message(char *message)
-{
-    clear_messages();
-    for (int i = 1; i < MAX_MESSAGES; i++)
-    {   
-        strcpy((char*)&messages[i-1], (char*)messages[i]);
-    }
-    strcpy((char*)&messages[MAX_MESSAGES-1], message);
-    printf("\033[100A"); // move up a lot
-    printf("\033[2B"); //move down
-    show_messages();
-
-}
-
-void save_user_info(char *s_name, char *s_ip, int s_port)
-{
-    strcpy(name, s_name);
-    strcpy(ip, s_ip);
-    port = s_port;
-}
-
-void clear_messages(void)
-{
-    printf("\033[200A"); // move up a lot
-    printf("\033[2B"); //move down
-    for (int i = 0; i < MAX_MESSAGES + 2; i++)
-    {
-        printf("\033[64C"); // Move right X column;
-        for (int i = 0; i < 66; i++) printf("\b \b"); // delete the str
-        printf("\033[1B"); // Move down X lines;
-    }
-    printf("\033[1B"); // Move down X lines;
 }
 
 
