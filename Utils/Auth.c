@@ -1,6 +1,6 @@
 #include "Interface.h"
 #include "Auth.h"
-#include "Configs.h"
+#include "../Configs.h"
 
 // asks user to enter name
 void get_name(char *name)

@@ -13,4 +13,9 @@ void setNonblockFlag(int descriptor);
 
 void create_Addr(char *ip, int port, struct sockaddr_in *addr);
 
+int read_from_socket(int sock, char *buffer, struct sockaddr_in *addr, unsigned int *addr_len);
+
+// Checks two clients addresses
+int check_equal_addresses(struct sockaddr_in *first, struct sockaddr_in *second);
+
 #endif

@@ -1,7 +1,9 @@
 #include "Configs.h"
-#include "Auth.h"
-#include "Interface.h"
+#include "Utils/Auth.h"
+#include "Utils/Interface.h"
 #include "Network/Socket.h"
+#include "Network/Packet.h"
+#include "Network/Client.h"
 
 int main(int argc, char **argv)
 {
@@ -20,8 +22,6 @@ int main(int argc, char **argv)
 
     // ask user to connect
     get_connection_address(connect_ip, &connect_port);
-
-    printf("\n\n%s\n%d\n%s\n%d\n", name, user_port, connect_ip, connect_port);
 
     fflush(stdin);
     system("clear");
@@ -49,8 +49,8 @@ int main(int argc, char **argv)
     // Getting user ip address
     user_ip = inet_ntoa(local_address.sin_addr);
 
-    user_info(name, user_ip, user_port);
-    show_messages();
+    // save_user_info(name, user_ip, user_port);
+    init_ui(name, user_ip, user_port);
 
     // WTF
     setNonblockFlag(sock);
@@ -61,10 +61,29 @@ int main(int argc, char **argv)
     {
         create_Addr(connect_ip, connect_port, &buffer_address);
         sprintf((char*)&buffer_send, "Connecting to %s:%d", connect_ip, connect_port);
+        add_message((char*)buffer_send);
+    }
+    else
+    {
+        add_message("Waiting someone to connect...");
     }
 
+    while (1)
+    {
+        // C )))
+        // Need to pass struct size pointer
+        unsigned int address_size = sizeof(local_address);
+        while ((read_size = read_from_socket(sock, (char*)&buffer_read, &buffer_address, &address_size)) != -1) // while getting smth
+        {
+            // do not get our own packages
+            if (check_equal_addresses(&local_address, &buffer_address))
+                continue;
 
-    
+            int packet_id = get_packet_id((char*)&buffer_read);
+
+            // struct Client *client = get_client(&buffer_address); // todo
+        }
+    }
 
     return 0;
 }
