@@ -23,10 +23,11 @@ int main(int argc, char **argv)
     // ask user to connect
     get_connection_address(connect_ip, &connect_port);
 
+    // clear stdin buffer and init ui
     fflush(stdin);
     interface_init();
 
-    // Local socket address
+    // Local socket address for user
     struct sockaddr_in local_address;
 
     // Socket to send/receive data
@@ -52,36 +53,128 @@ int main(int argc, char **argv)
     // set user info
     update_info(name, user_ip, user_port);
 
-    // WTF
+    // non block the socket and stdin descriptors
     setNonblockFlag(sock);
     setNonblockFlag(0);
 
     // If connect ip exists - try to connect
     if (connect_ip[0] != 0)
     {
+        // create ann address to connect and add messages
         create_Addr(connect_ip, connect_port, &buffer_address);
+        // add message about connection
         sprintf((char*)&buffer_send, "Connecting to %s:%d", connect_ip, connect_port);
         add_message((char*)buffer_send);
+        // send packets to connect and wait for acception
+        connect_to_client(sock, &buffer_address, (char*)&name);
     }
     else
     {
         add_message("Waiting someone to connect...");
     }
+    int time_to_send_ping = SEND_PING_PAUSE;
     while (1)
     {
-        // C )))
-        // Need to pass struct size pointer
+        // Need to pass struct size pointer 
         unsigned int address_size = sizeof(local_address);
-        while ((read_size = read_from_socket(sock, (char*)&buffer_read, &buffer_address, &address_size)) != -1) // while getting smth
+        // while there are packets
+        // writes address of sender in buffer_address
+        while ((read_size = read_from_socket(sock, (char*)&buffer_read, &buffer_address, &address_size)) != -1) 
         {
-            printf("1");
             // do not get our own packages
             if (check_equal_addresses(&local_address, &buffer_address))
                 continue;
 
+            // to choose what to do with packet - need to now what is that packet for
             int packet_id = get_packet_id((char*)&buffer_read);
+            // get the pointer to client struct of the sender
+            struct Client *client = get_client(&buffer_address);
 
-            // struct Client *client = get_client(&buffer_address); // todo
+            // skip the client if he isnt authorized and thats not connection request or acception
+            if (client == NULL && packet_id != PACKET_CONNECT_REQUEST && packet_id != PACKET_CONNECT_ACCEPT)
+                continue;
+            
+            // send ping packet
+            if (client != NULL)
+            {
+                if (packet_id != PACKET_PING)
+                {
+                    create_simple_packet(PACKET_PING, (char*)&buffer_send);
+                    send_udp(sock, &buffer_address, (char*)&buffer_send, 1);
+                }
+            }
+
+            // finish received message with \0
+            buffer_read[read_size] = '\0';
+
+            switch (packet_id)
+            {
+                case PACKET_CONNECT_REQUEST:
+                    // if client do not already exists
+                    if (!client_exists(&buffer_address))
+                    {
+                        // copy the name
+                        strcpy((char*)&buffer_name, buffer_read+1);
+                        // add new client
+                        add_client(&buffer_address, (char*)&buffer_name);
+                        // add message about connection
+                        sprintf((char*)&buffer_send, "%s connected!", buffer_name);
+                        add_message((char*)&buffer_send);
+                    }
+                    // send acception
+                    // do even if client exists - user could be disconected recently and tries to connect again
+                    send_size = create_connect_accept_packet((char*)&buffer_send, (char*)&name);
+                    send_udp(sock, &buffer_address, (char*)&buffer_send, send_size);
+                    break;
+
+                case PACKET_CONNECT_ACCEPT:
+                    // if client do not already exists
+                    if (!client_exists(&buffer_address))
+                    {
+                        // copy the name
+                        strcpy((char*)&buffer_name, buffer_read+1);
+                        // add new client
+                        add_client(&buffer_address, (char*)&buffer_name);
+                        // add message about connection
+                        sprintf((char*)&buffer_send, "Connected to %s!", buffer_name);
+                        add_message((char*)&buffer_send);
+                    }
+                    break;
+
+                case PACKET_PING:
+                    // reload client activity
+                    client->active = PING_SKIP;
+                    break;
+
+                case PACKET_TIMEOUT:
+                    // if user was disconected - try to connect again
+                    connect_to_client(sock, &buffer_address, (char*)name);
+                    break;
+
+                case PACKET_SEND_MESSAGE:
+                    // print message and sender name
+                    sprintf((char*)&buffer_send, "%s: %s", client->name, buffer_read+1);
+                    add_message(buffer_send);
+                    break;
+
+                case PACKET_REQUEST_USERS:
+                    // create list of available users and send it to requester
+                    send_size = create_list_of_users_packet((char*)&buffer_send);
+                    send_udp(sock, &buffer_address, (char*)&buffer_send, send_size);
+                    break;
+
+                case PACKET_LIST_USERS:
+                    // create request packet to send
+                    send_size = create_connect_request_packet((char*)&buffer_send, (char*)&name);
+                    // number of users in the given list
+                    int count = buffer_read[1];
+                    for (int i = 0; i < count; i++)
+                    {
+                        memcpy(&buffer_address, buffer_read+2, sizeof(struct sockaddr_in)); //!+i*sizeof(struct sockaddr_in)
+                        send_udp(sock, &buffer_address, (char*)&buffer_send, send_size);
+                    }
+                    break;
+            }
         }
     }
 

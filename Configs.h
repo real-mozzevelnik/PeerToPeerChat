@@ -17,6 +17,10 @@
 #define MAX_IPv4_LENGTH 50
 #define BUFFER_SIZE 512
 #define MAX_MESSAGES 20
+#define MAX_CLIENTS 20
 #define TICK_PER_SECOND 10
+
+#define PING_SKIP 10
+#define SEND_PING_PAUSE 10
 
 #endif

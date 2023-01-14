@@ -2,7 +2,7 @@
 #include "Auth.h"
 #include "../Configs.h"
 
-// asks user to enter name
+// ask user to input name
 void get_name(char *name)
 {
     // clear name space
@@ -19,7 +19,7 @@ void get_name(char *name)
     if (check) *check = '\0';
 }
 
-// asks user to enter local port
+// ask user to change port
 void get_user_port(int *user_port)
 {
     char yes;

@@ -6,10 +6,12 @@
 // buffer for messages
 static char messages[16][126] = {{0}};
 
+// windows for info messages and input
 static WINDOW *user_info_box = NULL;
 static WINDOW *messages_box = NULL;
 static WINDOW *input_box = NULL;
 
+// create window for user info
 static void init_info()
 {
     user_info_box = newwin(5, 65, 0, 0);
@@ -17,22 +19,23 @@ static void init_info()
     wrefresh(user_info_box);
 }
 
+// create window for messages
 static void init_messages()
 {
     messages_box = newwin(17, 65, 5, 0);
     box(messages_box, 0, 0);
-    // mvwprintw(messages_box, 16, 0, "│                                                               │");
     wrefresh(messages_box);
 }
 
+// create window for input
 static void init_input()
 {
     input_box = newwin(3, 65, 22, 0);
     box(input_box, 0, 0);
-    // mvwprintw(input_box, 0, 0, "├───────────────────────────────────────────────────────────────┤");
     wrefresh(input_box);
 }
 
+// initialize the whole interface
 void interface_init()
 {
     printf("\e[8;25;80;t");
@@ -49,6 +52,7 @@ void interface_init()
     wtimeout(input_box, 1000 / TICK_PER_SECOND);
 }
 
+// update user info box
 void update_info(char *name, char *ip, int port)
 {
     // clear and recreate box
@@ -68,11 +72,11 @@ void update_info(char *name, char *ip, int port)
     wrefresh(user_info_box);
 }
 
+// recreates message window and print messages
 static void update_messages()
 {
     wclear(messages_box);
     box(messages_box, 0, 0);
-    // mvwprintw(messages_box, 16, 0, "│                                                               │");
     for (int i = 0; i < 16; i++)
     {
         mvwprintw(messages_box, i, 1, messages[i]);
@@ -80,10 +84,13 @@ static void update_messages()
     wrefresh(messages_box);
 }
 
+// add message to message box
+// the very first message in the list will disappear
 void add_message(char *message)
 {
     for (int i = 1; i < 16; i++)
     {
+        // clean and move messages
         memset((char*)&messages[i-1], ' ', sizeof(char) * 18);
         strcpy((char*)&messages[i-1], (char*)messages[i]);
     }
@@ -93,7 +100,7 @@ void add_message(char *message)
 
 
 
-// func to send error and exit programm
+// print error with given name
 void send_error(char *error_name)
 {
     printf("Error\n");
