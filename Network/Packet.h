@@ -27,4 +27,7 @@ int create_connect_accept_packet(char *buffer, char *name);
 // creates list of all available users to send it to requester
 int create_list_of_users_packet(char *buffer);
 
+// create packet that contains given message
+int create_message_packet(char *buffer_send, char *buffer_input, int len);
+
 #endif

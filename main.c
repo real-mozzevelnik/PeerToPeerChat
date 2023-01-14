@@ -77,7 +77,7 @@ int main(int argc, char **argv)
     {
         // Need to pass struct size pointer 
         unsigned int address_size = sizeof(local_address);
-        sleep(1);
+        // sleep(1);
         // while there are packets
         // writes address of sender in buffer_address
         while ((read_size = read_from_socket(sock, (char*)&buffer_read, &buffer_address, &address_size)) != -1) 
@@ -183,6 +183,24 @@ int main(int argc, char **argv)
                     break;
             }
         }
+        // length of given input
+        static int input_size = 0;
+        // buffer for input messages
+        static char buffer_input[100] = {0};
+
+        while (read_input((char*)&buffer_input, &input_size) == 1)
+        {
+            // add message to user
+            sprintf((char*)&buffer_send, "You: %s", buffer_input);
+            add_message((char*)&buffer_send);
+            // screate packet and message to all the clients
+            create_message_packet((char*)&buffer_send, (char*)buffer_input, input_size);
+            send_to_every_one(sock, (char*)&buffer_send, input_size + 1);
+            // clear the buffer
+            memset(buffer_input, 0, 100);
+            input_size = 0;
+        }
+
     }
 
     return 0;

@@ -98,8 +98,6 @@ void add_message(char *message)
     update_messages();
 }
 
-
-
 // print error with given name
 void send_error(char *error_name)
 {
@@ -107,6 +105,41 @@ void send_error(char *error_name)
     printf("%s\n", error_name);
     exit(EXIT_FAILURE);
 
+}
+
+// get input from input window to enter messages
+int read_input(char *buffer, int *size)
+{
+    int symbol = 0;
+    // err comes when there is no input in 100 ms
+    while ((symbol = wgetch(input_box)) != ERR)
+    {
+        // return if enter
+        if (symbol == '\n')
+        {
+            for (int i = 0; i < *size; i++)
+                mvwprintw(input_box, 1, i+1, " ");
+            return 1;
+        }
+        // replace symbol with " "
+        else if (symbol == KEY_BACKSPACE)
+        {
+            if (*size > 0)
+            {
+                mvwprintw(input_box, 1, *size, " ");
+                (*size)--;
+                buffer[*size] = 0;
+            }
+        }
+        // add symbol into buffer if number of symbols less than 99
+        else if (*size < 99)
+        {
+            buffer[*size] = (char)symbol;
+            (*size)++;
+        }
+    }
+    mvwprintw(input_box, 1, 1, (char*)buffer);
+    return 0;
 }
 
 

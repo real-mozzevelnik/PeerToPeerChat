@@ -96,3 +96,13 @@ int client_exists(struct sockaddr_in *addr)
 {
     return get_client(addr) != NULL;
 }
+
+// send packet to all the clients
+void send_to_every_one(int sock, char *buffer, int buffer_size)
+{
+    for (int i = 0; i < MAX_CLIENTS; i++)
+    {
+        if (clients[i].active > 0)
+            send_udp(sock, &(clients[i].address), buffer, buffer_size);
+    }
+}

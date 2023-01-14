@@ -14,4 +14,7 @@ void update_info(char *name, char *ip, int port);
 // the very first message in the list will disappear
 void add_message(char *message);
 
+// get input from input window to enter messages
+int read_input(char *buffer, int *size);
+
 #endif

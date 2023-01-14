@@ -25,4 +25,7 @@ struct Client * get_client(struct sockaddr_in *addr);
 // check if client in clients array
 int client_exists(struct sockaddr_in *addr);
 
+// send packet to all the clients
+void send_to_every_one(int sock, char *buffer, int buffer_size);
+
 #endif

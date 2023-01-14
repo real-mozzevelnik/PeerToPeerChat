@@ -55,3 +55,11 @@ int create_list_of_users_packet(char *buffer)
     }
     return pos;
 }
+
+// create packet that contains given message
+int create_message_packet(char *buffer_send, char *buffer_input, int len)
+{
+    buffer_send[0] = PACKET_SEND_MESSAGE;
+    strcpy(buffer_send+1, buffer_input);
+    return 1 + len;
+}
