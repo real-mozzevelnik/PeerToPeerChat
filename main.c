@@ -77,6 +77,7 @@ int main(int argc, char **argv)
     {
         // Need to pass struct size pointer 
         unsigned int address_size = sizeof(local_address);
+        sleep(1);
         // while there are packets
         // writes address of sender in buffer_address
         while ((read_size = read_from_socket(sock, (char*)&buffer_read, &buffer_address, &address_size)) != -1) 
@@ -168,10 +169,16 @@ int main(int argc, char **argv)
                     send_size = create_connect_request_packet((char*)&buffer_send, (char*)&name);
                     // number of users in the given list
                     int count = buffer_read[1];
+                    // index of buffer_read to copy memory from
+                    int pos = 2;
                     for (int i = 0; i < count; i++)
                     {
-                        memcpy(&buffer_address, buffer_read+2, sizeof(struct sockaddr_in)); //!+i*sizeof(struct sockaddr_in)
+                        // copy address into buffer
+                        memcpy(&buffer_address, buffer_read+pos, sizeof(struct sockaddr_in));
+                        // send connection request
                         send_udp(sock, &buffer_address, (char*)&buffer_send, send_size);
+                        // increase index
+                        pos += sizeof(struct sockaddr_in);
                     }
                     break;
             }

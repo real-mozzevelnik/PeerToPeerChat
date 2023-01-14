@@ -49,7 +49,7 @@ int create_list_of_users_packet(char *buffer)
         {
             // write address of client into buffer
             buffer[1]++;
-            memcpy(buffer+pos, &(clients->address), sizeof(struct sockaddr_in));
+            memcpy(buffer+pos, &(clients[i].address), sizeof(struct sockaddr_in));
             pos += sizeof(struct sockaddr_in);
         }
     }
