@@ -28,4 +28,7 @@ int client_exists(struct sockaddr_in *addr);
 // send packet to all the clients
 void send_to_every_one(int sock, char *buffer, int buffer_size);
 
+// delete client by changing his active to 0
+void delete_client(struct Client *client);
+
 #endif

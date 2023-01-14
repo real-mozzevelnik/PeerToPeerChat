@@ -106,3 +106,9 @@ void send_to_every_one(int sock, char *buffer, int buffer_size)
             send_udp(sock, &(clients[i].address), buffer, buffer_size);
     }
 }
+
+// delete client by changing his active to 0
+void delete_client(struct Client *client)
+{
+    client->active = 0;
+}

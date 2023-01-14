@@ -39,6 +39,11 @@ int main(int argc, char **argv)
     // Buffer for name
     char buffer_name[MAX_NAME_LENGTH] = {0};
 
+    // buffer for input messages
+    static char buffer_input[100] = {0};
+    // length of given input
+    static int input_size = 0;
+
     // Messages length
     int read_size = 0;
     int send_size = 0;
@@ -183,10 +188,6 @@ int main(int argc, char **argv)
                     break;
             }
         }
-        // length of given input
-        static int input_size = 0;
-        // buffer for input messages
-        static char buffer_input[100] = {0};
 
         while (read_input((char*)&buffer_input, &input_size) == 1)
         {
@@ -200,6 +201,35 @@ int main(int argc, char **argv)
             memset(buffer_input, 0, 100);
             input_size = 0;
         }
+
+        // sending the ping
+        time_to_send_ping--;
+        if (time_to_send_ping <= 0)
+        {
+            for (int i = 0; i < MAX_CLIENTS; i++)
+            // if client didnt send ping packets for a long time
+            if (clients[i].active == 1)
+            {
+                // delete client
+                create_simple_packet(PACKET_TIMEOUT, (char*)&buffer_send);
+                send_udp(sock, &clients[i].address, buffer_send, 1);
+                delete_client(&clients[i]);
+                // add message about client removing
+                sprintf((char*)&buffer_send, "%s disconected!", clients[i].name);
+                add_message((char*)&buffer_send);
+            }
+            // if client is active
+            else if(clients[i].active > 1)
+            {
+                // decrease his activity
+                clients[i].active--;
+                // send ping to every one
+                create_simple_packet(PACKET_PING, (char*)&buffer_send);
+                send_to_every_one(sock, (char*)&buffer_send, 1);
+            }
+            // update ping time
+            time_to_send_ping = SEND_PING_PAUSE;
+        } 
 
     }
 
