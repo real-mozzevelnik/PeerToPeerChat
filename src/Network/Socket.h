@@ -6,7 +6,7 @@
 int create_socket(void);
 
 // Binding the socket addr to given port
-void bind_address(int sock, struct sockaddr_in *addr, int port);
+void bind_address(int sock, struct sockaddr_in *addr, int port, char *ip);
 
 // non block flag for descriptor
 void setNonblockFlag(int descriptor);
@@ -23,5 +23,11 @@ int check_equal_addresses(struct sockaddr_in *first, struct sockaddr_in *second)
 
 // send udp message
 void send_udp(int sock, struct sockaddr_in *addr, char *buffer, int buffer_size);
+
+// get local ip address
+// creates new socket
+// thats now the best way to do that, i think, but thats the one that works
+void know_ip(char *buffer);
+
 
 #endif

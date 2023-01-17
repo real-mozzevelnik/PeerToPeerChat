@@ -1,0 +1,2 @@
+app : src/main.c src/Network/Client.c src/Network/Packet.c src/Network/Socket.c src/Utils/Interface.c src/Utils/Auth.c
+	gcc src/main.c src/Utils/Auth.c src/Utils/Interface.c src/Network/Socket.c src/Network/Packet.c src/Network/Client.c  -o app -lncurses

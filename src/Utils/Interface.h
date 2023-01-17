@@ -17,4 +17,7 @@ void add_message(char *message);
 // get input from input window to enter messages
 int read_input(char *buffer, int *size);
 
+// clear the terminal
+void close_ui(int sig);
+
 #endif

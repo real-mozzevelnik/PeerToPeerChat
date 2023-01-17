@@ -4,12 +4,13 @@
 #include "Network/Socket.h"
 #include "Network/Packet.h"
 #include "Network/Client.h"
+#include <signal.h>
 
 int main(int argc, char **argv)
 {
     // init user stats
     int user_port = DEFAULT_PORT;
-    char *user_ip = NULL;
+    char user_ip[30] = {0};
     int connect_port = DEFAULT_PORT;
     char connect_ip[MAX_IPv4_LENGTH] = {0};
     char name[MAX_NAME_LENGTH]; 
@@ -50,10 +51,11 @@ int main(int argc, char **argv)
 
     // Creating the socket
     int sock = create_socket();
+    // !get user local ip
+    know_ip(user_ip);
+
     // Binding the socket to the port
-    bind_address(sock, &local_address, user_port);
-    // Getting user ip address
-    user_ip = inet_ntoa(local_address.sin_addr);
+    bind_address(sock, &local_address, user_port, user_ip);
 
     // set user info
     update_info(name, user_ip, user_port);
@@ -78,6 +80,10 @@ int main(int argc, char **argv)
         add_message("Waiting someone to connect...");
     }
     int time_to_send_ping = SEND_PING_PAUSE;
+    // if user stops the programm using CTRL+C that function will catch it
+    // and free memory allocated for ui windows
+    signal(SIGINT, close_ui);
+
     while (1)
     {
         // Need to pass struct size pointer 

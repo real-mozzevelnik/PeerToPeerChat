@@ -1,6 +1,7 @@
 #include "Socket.h"
 #include "../Configs.h"
 #include "../Utils/Interface.h"
+#include <assert.h>
 
 // create the socket and check success
 int create_socket(void)
@@ -12,13 +13,14 @@ int create_socket(void)
 }
 
 // Binding the socket addr to given port
-void bind_address(int sock, struct sockaddr_in *addr, int port)
+void bind_address(int sock, struct sockaddr_in *addr, int port, char *ip)
 {
     // Clean addr
     memset((char*)addr, 0, sizeof(*addr));
     addr->sin_family = AF_INET; // Set the inet
     addr->sin_port = htons((unsigned short)port); // Set network byte order
-    addr->sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+    // !transform user ip to required byte order
+    addr->sin_addr.s_addr = inet_addr(ip);
 
     // Binding the socket to local port
     int result = bind(sock, (struct sockaddr*)addr, sizeof(*addr)); // Binding the socket
@@ -60,5 +62,34 @@ int check_equal_addresses(struct sockaddr_in *first, struct sockaddr_in *second)
 void send_udp(int sock, struct sockaddr_in *addr, char *buffer, int buffer_size)
 {
     sendto(sock, buffer, buffer_size, 0, (struct sockaddr*)addr, sizeof(*addr));
+}
+
+// get local ip address
+// creates new socket
+// thats now the best way to do that, i think, but thats the one that works
+// copied from stackoverflow
+// https://stackoverflow.com/questions/212528/how-can-i-get-the-ip-address-of-a-linux-machine
+void know_ip(char *buffer)
+{
+    size_t buflen = 30;
+    int sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+
+    const char* kGoogleDnsIp = "8.8.8.8";
+    uint16_t kDnsPort = 53;
+    struct sockaddr_in serv;
+    memset(&serv, 0, sizeof(serv));
+    serv.sin_family = AF_INET;
+    serv.sin_addr.s_addr = inet_addr(kGoogleDnsIp);
+    serv.sin_port = htons(kDnsPort);
+
+    int err = connect(sock, (struct sockaddr*) &serv, sizeof(serv));
+
+    struct sockaddr_in name;
+    socklen_t namelen = sizeof(name);
+    err = getsockname(sock, (struct sockaddr*) &name, &namelen);
+
+
+    const char* p = inet_ntop(AF_INET, &name.sin_addr, buffer, buflen);
+    close(sock);
 }
 

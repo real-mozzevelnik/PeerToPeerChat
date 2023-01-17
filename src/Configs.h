@@ -11,6 +11,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <fcntl.h>
+#include <net/if.h>
 
 #define DEFAULT_PORT 8888
 #define MAX_NAME_LENGTH 50

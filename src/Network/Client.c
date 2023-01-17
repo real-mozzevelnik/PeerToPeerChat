@@ -39,7 +39,7 @@ void connect_to_client(int sock, struct sockaddr_in *addr, char *name)
                 // add new client to the array of clients
                 add_client(&buffer_address, (char*)&buffer_name);
                 // print message about connection
-                sprintf((char*)&buffer, "Connected to %s", buffer_name);
+                sprintf((char*)&buffer, "Connected to %s!", buffer_name);
                 add_message((char*)&buffer);
 
                 // send request to get all the clients

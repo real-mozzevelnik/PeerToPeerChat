@@ -2,6 +2,7 @@
 #include "Interface.h"
 
 #include <ncurses.h>
+#include <signal.h>
 
 // buffer for messages
 static char messages[16][126] = {{0}};
@@ -140,6 +141,18 @@ int read_input(char *buffer, int *size)
     }
     mvwprintw(input_box, 1, 1, (char*)buffer);
     return 0;
+}
+
+// clear the terminal
+void close_ui(int sig)
+{
+    if (sig!=SIGINT) return;
+    delwin(user_info_box);
+    delwin(messages_box);
+    delwin(input_box);
+    
+    endwin();
+    exit(EXIT_SUCCESS);
 }
 
 
